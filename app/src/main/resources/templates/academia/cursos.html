@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Mis cursos', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <div class="encabezado">
+        <h1 th:text="${academia.razonSocial}">Academia</h1>
+        <a class="boton chico" th:href="@{/academia/cursos/nuevo}">Nuevo curso</a>
+    </div>
+    <p class="nota">CU-03 · Cursos de la academia y su estado dentro del catálogo.</p>
+
+    <table class="tabla">
+        <thead>
+        <tr>
+            <th>Curso</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Lecciones</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="c : ${cursos}">
+            <td th:text="${c.titulo}">Título</td>
+            <td th:text="${c.categoria}">Categoría</td>
+            <td th:text="${c.esGratuito()} ? 'Gratuito'
+                         : ${c.moneda} + ' ' + ${#numbers.formatDecimal(c.precio, 1, 'POINT', 2, 'COMMA')}">precio</td>
+            <td th:text="${c.cantidadLecciones}">0</td>
+            <td><span class="etiqueta" th:text="${c.estado}">ESTADO</span></td>
+            <td class="acciones">
+                <a class="boton-link" th:href="@{/academia/cursos/{id}/inscriptos(id=${c.id})}">Inscriptos</a>
+
+                <form th:unless="${c.publicado()}"
+                      th:action="@{/academia/cursos/{id}/publicar(id=${c.id})}" method="post" class="en-linea">
+                    <button type="submit" class="boton-link">Publicar</button>
+                </form>
+
+                <form th:if="${c.publicado()}"
+                      th:action="@{/academia/cursos/{id}/archivar(id=${c.id})}" method="post" class="en-linea">
+                    <button type="submit" class="boton-link">Archivar</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(cursos)}">
+            <td colspan="6" class="nota">Todavía no cargaste cursos.</td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+# Build
+target/
+*.jar
+*.war
+
+# Maven local usado por el build en contenedor
+.m2/
+
+# Dependencias de Node (sólo para el script de capturas)
+node_modules/
+package-lock.json
+
+# Entorno
+.env
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

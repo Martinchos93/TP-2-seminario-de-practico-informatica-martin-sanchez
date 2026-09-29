@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Catálogo', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <h1>Catálogo de cursos</h1>
+
+    <form class="filtros" th:action="@{/catalogo}" method="get">
+        <input type="search" name="q" placeholder="Buscar por título" th:value="${q}">
+
+        <select name="categoria">
+            <option value="">Todas las categorías</option>
+            <option th:each="c : ${categorias}"
+                    th:value="${c.id}"
+                    th:text="${c.nombre}"
+                    th:selected="${c.id == categoriaSeleccionada}"></option>
+        </select>
+
+        <button type="submit" class="boton chico">Filtrar</button>
+    </form>
+
+    <p class="nota" th:if="${#lists.isEmpty(cursos)}">
+        No hay cursos publicados que coincidan con la búsqueda.
+    </p>
+
+    <div class="grilla">
+        <article class="tarjeta curso" th:each="curso : ${cursos}">
+            <span class="etiqueta" th:text="${curso.categoria.nombre}">Categoría</span>
+            <h2 th:text="${curso.titulo}">Título</h2>
+            <p class="dictado-por" th:text="${curso.academia.razonSocial}">Academia</p>
+            <p th:text="${#strings.abbreviate(curso.descripcion, 140)}">Descripción</p>
+
+            <div class="pie-tarjeta">
+                <span class="precio"
+                      th:text="${curso.esGratuito()} ? 'Gratuito'
+                               : ${curso.moneda} + ' ' + ${#numbers.formatDecimal(curso.precio, 1, 'POINT', 2, 'COMMA')}">
+                </span>
+                <a class="boton chico" th:href="@{/catalogo/{id}(id=${curso.id})}">Ver detalle</a>
+            </div>
+        </article>
+    </div>
+
+</div>
+</body>
+</html>

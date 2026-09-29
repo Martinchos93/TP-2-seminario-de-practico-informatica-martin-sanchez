@@ -1,0 +1,26 @@
+@startuml 02a-analisis-alta-academia
+' =====================================================================
+'  Tribu - Clases de analisis de CU-10 Dar de alta una academia
+'  PUD, disciplina de Analisis: clases de interfaz, control y entidad
+' =====================================================================
+title Clases de análisis — CU-10 Dar de alta una academia
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontSize 13
+left to right direction
+
+actor Administrador
+boundary "PantallaAltaAcademia" as I
+control "GestorAltaAcademia" as C
+entity "Academia" as E1
+entity "Usuario" as E2
+entity "Rol" as E3
+
+Administrador -- I
+I -- C
+C -- E1
+C -- E2
+C -- E3
+
+@enduml

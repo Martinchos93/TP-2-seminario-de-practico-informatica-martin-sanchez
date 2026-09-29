@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('No se pudo completar la operación', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <section class="tarjeta angosta">
+        <h1>No se pudo completar la operación</h1>
+        <p class="alerta mal" th:text="${mensaje}">Motivo</p>
+        <a class="boton" th:href="@{/catalogo}">Volver al catálogo</a>
+    </section>
+
+</div>
+</body>
+</html>

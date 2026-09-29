@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Nueva academia', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <nav class="migas"><a th:href="@{/admin/usuarios}">Usuarios</a> › Nueva academia</nav>
+
+    <section class="tarjeta angosta">
+        <h1>Dar de alta una academia</h1>
+        <p class="nota">CU-10 · Registra la academia y la cuenta de su titular con el rol ACADEMIA.</p>
+
+        <form th:action="@{/admin/academias}" th:object="${form}" method="post">
+            <div class="alerta mal" th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></div>
+
+            <h2 class="subtitulo-form">Datos de la academia</h2>
+
+            <label for="razonSocial">Razón social</label>
+            <input type="text" id="razonSocial" th:field="*{razonSocial}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('razonSocial')}" th:errors="*{razonSocial}"></span>
+
+            <label for="cuit">CUIT</label>
+            <input type="text" id="cuit" th:field="*{cuit}" placeholder="30-12345678-9" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('cuit')}" th:errors="*{cuit}"></span>
+
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" th:field="*{descripcion}" rows="3"></textarea>
+
+            <h2 class="subtitulo-form">Titular de la cuenta</h2>
+
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" th:field="*{nombre}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></span>
+
+            <label for="apellido">Apellido</label>
+            <input type="text" id="apellido" th:field="*{apellido}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('apellido')}" th:errors="*{apellido}"></span>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" th:field="*{email}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+
+            <label for="password">Contraseña inicial</label>
+            <input type="password" id="password" th:field="*{password}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+            <small class="nota">Mínimo 8 caracteres.</small>
+
+            <button type="submit" class="boton">Dar de alta</button>
+        </form>
+    </section>
+
+</div>
+</body>
+</html>

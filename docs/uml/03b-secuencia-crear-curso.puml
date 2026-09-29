@@ -1,0 +1,101 @@
+@startuml 03b-secuencia-crear-curso
+' =====================================================================
+'  Tribu - Diagrama de secuencia CU-11 Crear curso
+'  (PUD, disciplina de Diseno)
+' =====================================================================
+title Tribu — CU-11 Crear curso
+
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #16222e
+  LifeLineBorderColor #5B6B7A
+  ParticipantBorderColor #00857A
+  ParticipantBackgroundColor #E4F3F1
+  ParticipantFontColor #16222e
+  ActorBorderColor #00857A
+}
+
+actor Academia
+participant "AcademiaController" as C <<web>>
+participant "CursoService" as S <<servicio>>
+participant "AcademiaRepository" as RA <<repositorio>>
+participant "CursoRepository" as RC <<repositorio>>
+participant "CategoriaRepository" as RG <<repositorio>>
+
+Academia -> C : GET /academia/cursos/nuevo
+activate C
+C -> S : categorias()
+activate S
+S -> RG : findAll()
+RG --> S : List<Categoria>
+S --> C : List<Categoria>
+deactivate S
+C --> Academia : formulario con las categorías
+deactivate C
+
+Academia -> C : POST /academia/cursos\n(titulo, categoriaId, descripcion, precio,\ntituloModulo, lecciones, _csrf)
+activate C
+
+C -> C : validar campos\n(@NotBlank, @NotNull, @DecimalMin 0)
+alt falta un dato o el precio es negativo (4a)
+    C --> Academia : formulario con el error en cada campo
+else datos completos
+    C -> S : academiaDe(usuarioId)
+    activate S
+    S -> RA : findByUsuarioId(usuarioId)
+    RA --> S : Academia
+    S --> C : Academia
+    deactivate S
+
+    C -> S : crear(academiaId, categoriaId, titulo,\ndescripcion, precio, tituloModulo, lecciones)
+    activate S
+    S -> RA : findById(academiaId)
+    RA --> S : Academia
+    alt !academia.isActiva() (4c)
+        S --> C : ReglaNegocioException
+    else academia activa
+        S -> RC : existsByAcademiaIdAndTituloIgnoreCase(academiaId, titulo)
+        RC --> S : boolean
+        alt título repetido en la academia (4b)
+            S --> C : ReglaNegocioException
+        else título libre
+            S -> RG : findById(categoriaId)
+            RG --> S : Categoria
+            create participant "curso : Curso" as K <<entidad>>
+            S -> K : new Curso(academia, categoria,\ntitulo, descripcion, precio)
+            note right of K : estado = BORRADOR
+
+            opt se cargaron lecciones (si no, flujo 3b)
+                S -> K : agregarModulo(tituloModulo)
+                activate K
+                create participant "modulo : Modulo" as M <<entidad>>
+                K -> M : new Modulo(curso, titulo, orden = 1)
+                K --> S : Modulo
+                deactivate K
+                loop por cada línea del campo lecciones
+                    S -> M : agregarLeccion(titulo)
+                end
+            end
+
+            S -> RC : save(curso)
+            note right of RC
+              Módulos y lecciones se guardan
+              en cascada con el curso.
+            end note
+            RC --> S : Curso
+            S --> C : Curso
+        end
+    end
+    deactivate S
+
+    alt creación rechazada
+        C --> Academia : formulario con el motivo del rechazo
+    else curso creado
+        C --> Academia : redirect /academia/cursos\n+ "Se creó el curso ... en borrador"
+    end
+end
+deactivate C
+
+@enduml

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Pago de la inscripción', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <section class="tarjeta angosta">
+        <h1>Pago de la inscripción</h1>
+
+        <dl class="resumen">
+            <dt>Curso</dt>
+            <dd th:text="${inscripcion.curso.titulo}">Curso</dd>
+
+            <dt>Academia</dt>
+            <dd th:text="${inscripcion.curso.academia.razonSocial}">Academia</dd>
+
+            <dt>Importe</dt>
+            <dd class="precio grande"
+                th:text="${inscripcion.curso.moneda} + ' ' +
+                         ${#numbers.formatDecimal(inscripcion.curso.precio, 1, 'POINT', 2, 'COMMA')}">importe</dd>
+        </dl>
+
+        <form th:action="@{/alumno/pago/{id}(id=${inscripcion.id})}" method="post">
+            <label for="medioPago">Medio de pago</label>
+            <select id="medioPago" name="medioPago" required>
+                <option th:each="m : ${mediosPago}" th:value="${m}" th:text="${m}">medio</option>
+            </select>
+
+            <label for="numeroTarjeta">Número de tarjeta</label>
+            <input type="text" id="numeroTarjeta" name="numeroTarjeta"
+                   inputmode="numeric" autocomplete="off" required
+                   placeholder="4509 9535 6623 3704">
+
+            <small class="nota">
+                Pasarela simulada. Terminada en <code>0000</code> devuelve fondos insuficientes,
+                en <code>1111</code> tarjeta vencida; cualquier otro número se aprueba.
+                El número no se almacena en la base de datos.
+            </small>
+
+            <button type="submit" class="boton">Pagar</button>
+        </form>
+    </section>
+
+    <section class="tarjeta angosta" th:if="${!#lists.isEmpty(intentosPrevios)}">
+        <h2>Intentos anteriores</h2>
+        <table class="tabla">
+            <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Medio</th>
+                <th>Estado</th>
+                <th>Detalle</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${intentosPrevios}">
+                <td th:text="${#temporals.format(p.fechaSolicitud, 'dd/MM/yyyy HH:mm')}">fecha</td>
+                <td th:text="${p.medioPago}">medio</td>
+                <td><span class="etiqueta" th:text="${p.estado}">estado</span></td>
+                <td th:text="${p.detalleRechazo} ?: ${p.referenciaExterna}">detalle</td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+</div>
+</body>
+</html>

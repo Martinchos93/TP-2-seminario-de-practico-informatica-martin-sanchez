@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Ingresar', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <section class="tarjeta angosta">
+        <h1>Ingresar</h1>
+
+        <p class="alerta mal" th:if="${param.error}">Email o contraseña incorrectos.</p>
+        <p class="alerta ok" th:if="${param.logout}">Cerraste sesión correctamente.</p>
+
+        <form th:action="@{/login}" method="post">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required autofocus>
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit" class="boton">Ingresar</button>
+        </form>
+
+        <p class="nota">
+            ¿No tenés cuenta? <a th:href="@{/registro}">Registrate como alumno</a>.
+        </p>
+
+        <details class="nota">
+            <summary>Cuentas de demostración</summary>
+            <ul>
+                <li><code>admin@tribu.com.ar</code> — perfil ADMIN</li>
+                <li><code>contacto@codeacademy.com.ar</code> — perfil ACADEMIA</li>
+                <li><code>ana.lopez@gmail.com</code> — perfil ALUMNO</li>
+            </ul>
+            <p>Contraseña para todas: <code>Tribu2026!</code></p>
+        </details>
+    </section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,41 @@
+@startuml 04-estados-inscripcion
+' =====================================================================
+'  Tribu - Diagrama de estados de la entidad Inscripcion
+' =====================================================================
+title Tribu — Ciclo de vida de una Inscripción
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam ArrowColor #16222e
+skinparam state {
+  BackgroundColor #E4F3F1
+  BorderColor #00857A
+  FontColor #16222e
+}
+
+[*] --> PENDIENTE_PAGO : inscribirse\n[curso arancelado]
+[*] --> ACTIVA : inscribirse\n[curso gratuito]
+
+PENDIENTE_PAGO : el alumno no accede
+PENDIENTE_PAGO : al contenido
+
+PENDIENTE_PAGO --> PENDIENTE_PAGO : pagar\n[pasarela rechaza]
+PENDIENTE_PAGO --> ACTIVA : pagar\n[pasarela aprueba]
+PENDIENTE_PAGO --> CANCELADA : cancelar
+
+ACTIVA : habilita el cursado
+ACTIVA --> ACTIVA : completar lección\n[quedan lecciones]
+ACTIVA --> COMPLETADA : completar última lección\n/ emitir certificado
+ACTIVA --> CANCELADA : cancelar
+
+COMPLETADA : conserva el acceso
+COMPLETADA : de sólo lectura
+COMPLETADA --> [*]
+CANCELADA --> [*]
+
+note right of ACTIVA
+  permiteCursar() devuelve true
+  sólo en ACTIVA y COMPLETADA.
+end note
+
+@enduml

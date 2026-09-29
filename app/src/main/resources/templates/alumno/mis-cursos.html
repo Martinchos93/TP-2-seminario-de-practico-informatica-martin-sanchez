@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Mis cursos', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <h1>Mis cursos</h1>
+
+    <p class="nota" th:if="${#lists.isEmpty(inscripciones)}">
+        Todavía no te inscribiste a ningún curso. Mirá el <a th:href="@{/catalogo}">catálogo</a>.
+    </p>
+
+    <div class="grilla">
+        <article class="tarjeta curso" th:each="i : ${inscripciones}">
+            <span class="etiqueta" th:text="${i.estado}">ESTADO</span>
+            <h2 th:text="${i.curso.titulo}">Curso</h2>
+            <p class="dictado-por" th:text="${i.curso.academia.razonSocial}">Academia</p>
+
+            <div class="pie-tarjeta">
+                <a th:if="${i.estado.name() == 'PENDIENTE_PAGO'}"
+                   class="boton chico" th:href="@{/alumno/pago/{id}(id=${i.id})}">Pagar inscripción</a>
+
+                <a th:if="${i.permiteCursar()}"
+                   class="boton chico" th:href="@{/alumno/cursar/{id}(id=${i.curso.id})}">
+                    <span th:text="${i.estado.name() == 'COMPLETADA'} ? 'Ver curso' : 'Continuar'">Continuar</span>
+                </a>
+
+                <span th:if="${i.estado.name() == 'CANCELADA'}" class="nota">Inscripción cancelada</span>
+            </div>
+        </article>
+    </div>
+
+</div>
+</body>
+</html>

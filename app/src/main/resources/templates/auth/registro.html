@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Crear cuenta', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <section class="tarjeta angosta">
+        <h1>Crear cuenta de alumno</h1>
+
+        <form th:action="@{/registro}" th:object="${form}" method="post">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" th:field="*{nombre}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></span>
+
+            <label for="apellido">Apellido</label>
+            <input type="text" id="apellido" th:field="*{apellido}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('apellido')}" th:errors="*{apellido}"></span>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" th:field="*{email}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" th:field="*{password}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></span>
+            <small class="nota">Mínimo 8 caracteres.</small>
+
+            <button type="submit" class="boton">Crear cuenta</button>
+        </form>
+    </section>
+
+</div>
+</body>
+</html>

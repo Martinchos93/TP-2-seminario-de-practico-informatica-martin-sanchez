@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Cursar', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <nav class="migas"><a th:href="@{/alumno/mis-cursos}">Mis cursos</a> › <span th:text="${curso.titulo}"></span></nav>
+
+    <h1 th:text="${curso.titulo}">Curso</h1>
+
+    <section class="tarjeta">
+        <h2>Tu avance</h2>
+        <div class="barra-progreso">
+            <div class="relleno" th:style="'width:' + ${avance.porcentaje()} + '%'"></div>
+        </div>
+        <p th:text="${avance.leccionesHechas} + ' de ' + ${avance.leccionesTotales} +
+                    ' lecciones completadas (' + ${avance.porcentaje()} + '%)'">avance</p>
+
+        <p class="alerta ok" th:if="${certificado != null}">
+            Certificado emitido:
+            <strong th:text="${certificado.codigo}">código</strong>
+            el <span th:text="${#temporals.format(certificado.fechaEmision, 'dd/MM/yyyy')}"></span>.
+        </p>
+    </section>
+
+    <h2>Plan de estudio</h2>
+
+    <ol class="plan">
+        <li th:each="modulo : ${curso.modulos}">
+            <h3 th:text="${modulo.titulo}">Módulo</h3>
+
+            <ul class="lecciones">
+                <li th:each="leccion : ${modulo.lecciones}"
+                    th:classappend="${avance.idsLeccionesHechas().contains(leccion.id)} ? 'hecha' : ''">
+
+                    <div class="dato-leccion">
+                        <span class="tilde"
+                              th:text="${avance.idsLeccionesHechas().contains(leccion.id)} ? '✓' : '○'">○</span>
+                        <span th:text="${leccion.titulo}">Lección</span>
+                        <small class="nota"
+                               th:text="'· ' + ${leccion.tipoContenido} + ' · ' + ${leccion.duracionMin} + ' min'"></small>
+                    </div>
+
+                    <form th:unless="${avance.idsLeccionesHechas().contains(leccion.id)}"
+                          th:action="@{/alumno/cursar/{c}/leccion/{l}(c=${curso.id}, l=${leccion.id})}"
+                          method="post">
+                        <button type="submit" class="boton-link">Marcar como completada</button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    </ol>
+
+</div>
+</body>
+</html>

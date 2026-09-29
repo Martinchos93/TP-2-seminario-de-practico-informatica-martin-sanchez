@@ -1,0 +1,97 @@
+@startuml 01-casos-de-uso
+' =====================================================================
+'  Tribu - Modelo de casos de uso (PUD, disciplina de Requisitos)
+'  Universidad Siglo 21 - Seminario de Practica Informatica - TP2
+' =====================================================================
+title Tribu — Diagrama de casos de uso del MVP
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam ArrowColor #16222e
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #E4F3F1
+  BorderColor #00857A
+  FontColor #16222e
+}
+skinparam package {
+  BackgroundColor #FAFBFC
+  BorderColor #DDE4EA
+}
+
+left to right direction
+
+actor "Visitante" as Visitante
+actor "Alumno" as Alumno
+actor "Academia" as Academia
+actor "Administrador" as Admin
+actor "Pasarela de pagos" as PSP <<sistema externo>>
+
+Visitante <|-- Alumno
+
+rectangle "Plataforma Tribu" {
+
+  package "Acceso" {
+    usecase "CU-01\nRegistrarse como alumno" as CU01
+    usecase "CU-02\nGestionar usuarios" as CU02
+    usecase "CU-10\nDar de alta una academia" as CU10
+    usecase "CU-08\nConsultar catálogo" as CU08
+  }
+
+  package "Oferta académica" {
+    usecase "CU-11\nCrear curso" as CU11
+    usecase "CU-03\nPublicar curso" as CU03
+    usecase "CU-09\nConsultar inscriptos" as CU09
+  }
+
+  package "Inscripción y cursado" {
+    usecase "CU-04\nInscribirse a un curso" as CU04
+    usecase "CU-05\nPagar el curso" as CU05
+    usecase "CU-06\nCursar" as CU06
+    usecase "CU-07\nEmitir certificado" as CU07
+  }
+
+  usecase "Autenticarse" as CUAuth
+}
+
+Visitante --> CU01
+Visitante --> CU08
+
+Alumno --> CU04
+Alumno --> CU05
+Alumno --> CU06
+
+Academia --> CU11
+Academia --> CU03
+Academia --> CU09
+
+Admin --> CU02
+Admin --> CU10
+
+' Un curso arancelado obliga a pasar por el cobro; uno gratuito no.
+' La flecha de <<extend>> va del caso que extiende al caso base.
+CU05 ..> CU04 : <<extend>>\n[curso arancelado]
+
+' El cursado requiere una inscripción habilitada.
+CU06 ..> CU04 : <<include>>
+
+' Al completarse la última lección el sistema emite la constancia.
+CU07 ..> CU06 : <<extend>>\n[plan de estudio completo]
+
+' Toda operación privada exige sesión iniciada.
+CU04 ..> CUAuth : <<include>>
+CU03 ..> CUAuth : <<include>>
+CU02 ..> CUAuth : <<include>>
+CU10 ..> CUAuth : <<include>>
+CU11 ..> CUAuth : <<include>>
+
+CU05 --> PSP : autoriza el cobro
+
+note bottom of CU05
+  El prototipo integra una pasarela
+  simulada. El contrato (idempotencia,
+  HTTPS, códigos de respuesta) es el
+  mismo que usaría un PSP real.
+end note
+
+@enduml

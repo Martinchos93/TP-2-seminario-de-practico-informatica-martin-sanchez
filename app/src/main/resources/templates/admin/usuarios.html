@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Usuarios', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <div class="encabezado">
+        <h1>Gestión de usuarios</h1>
+        <a class="boton chico" th:href="@{/admin/academias/nueva}">Nueva academia</a>
+    </div>
+    <p class="nota">CU-02 · Listado de todas las cuentas de la plataforma con filtros por texto y por rol.</p>
+
+    <form class="filtros" th:action="@{/admin/usuarios}" method="get">
+        <input type="search" name="q" placeholder="Nombre, apellido o email" th:value="${q}">
+
+        <select name="rol">
+            <option value="">Todos los roles</option>
+            <option value="ADMIN"    th:selected="${rol == 'ADMIN'}">ADMIN</option>
+            <option value="ACADEMIA" th:selected="${rol == 'ACADEMIA'}">ACADEMIA</option>
+            <option value="ALUMNO"   th:selected="${rol == 'ALUMNO'}">ALUMNO</option>
+        </select>
+
+        <button type="submit" class="boton chico">Filtrar</button>
+    </form>
+
+    <table class="tabla">
+        <thead>
+        <tr>
+            <th>Apellido y nombre</th>
+            <th>Email</th>
+            <th>Documento</th>
+            <th>Roles</th>
+            <th>Alta</th>
+            <th>Estado</th>
+            <th>Acción</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="u : ${pagina.content}">
+            <td th:text="${u.nombreCompleto}">Apellido, Nombre</td>
+            <td th:text="${u.email}">email</td>
+            <td th:text="${u.documento} ?: '—'">—</td>
+            <td>
+                <span class="etiqueta" th:each="r : ${u.roles}" th:text="${r.nombre}">ROL</span>
+            </td>
+            <td th:text="${#temporals.format(u.fechaAlta, 'dd/MM/yyyy')}">fecha</td>
+            <td>
+                <span th:class="${u.activo} ? 'estado activo' : 'estado inactivo'"
+                      th:text="${u.activo} ? 'Activo' : 'Inactivo'">estado</span>
+            </td>
+            <td>
+                <form th:action="@{/admin/usuarios/{id}/estado(id=${u.id})}" method="post">
+                    <input type="hidden" name="activo" th:value="${!u.activo}">
+                    <button type="submit" class="boton-link"
+                            th:text="${u.activo} ? 'Deshabilitar' : 'Habilitar'">acción</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${pagina.empty}">
+            <td colspan="7" class="nota">No se encontraron usuarios con esos criterios.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <nav class="paginado" th:if="${pagina.totalPages > 1}">
+        <a th:if="${!pagina.first}"
+           th:href="@{/admin/usuarios(q=${q}, rol=${rol}, pagina=${pagina.number - 1})}">‹ Anterior</a>
+
+        <span th:text="'Página ' + (${pagina.number} + 1) + ' de ' + ${pagina.totalPages}">Página</span>
+
+        <a th:if="${!pagina.last}"
+           th:href="@{/admin/usuarios(q=${q}, rol=${rol}, pagina=${pagina.number + 1})}">Siguiente ›</a>
+    </nav>
+
+    <p class="nota" th:text="'Total de usuarios: ' + ${pagina.totalElements}">Total</p>
+
+</div>
+</body>
+</html>

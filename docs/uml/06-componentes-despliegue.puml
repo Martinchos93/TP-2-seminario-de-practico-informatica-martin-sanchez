@@ -1,0 +1,72 @@
+@startuml 06-componentes-despliegue
+' =====================================================================
+'  Tribu - Vista de despliegue y comunicaciones
+'  Entregable: "Definiciones de comunicacion"
+' =====================================================================
+title Tribu — Diagrama de despliegue y protocolos de comunicación
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam ArrowColor #16222e
+skinparam node {
+  BackgroundColor #FAFBFC
+  BorderColor #5B6B7A
+}
+skinparam component {
+  BackgroundColor #E4F3F1
+  BorderColor #00857A
+  FontColor #16222e
+}
+skinparam database {
+  BackgroundColor #E4F3F1
+  BorderColor #00857A
+}
+
+node "Equipo del usuario" as Cliente {
+  component "Navegador web" as Browser
+}
+
+cloud "Internet" as Net
+
+node "Servidor de aplicación\n(contenedor tribu-app)" as Servidor {
+  component "Spring Boot 3\nTomcat embebido :8080" as App
+  component "Spring Security\n(autenticación y roles)" as Sec
+  component "Thymeleaf\n(renderizado HTML)" as View
+  component "Spring Data JPA\nHikariCP (pool)" as JPA
+}
+
+node "Servidor de datos\n(contenedor tribu-mysql)" as ServidorDB {
+  database "MySQL 8.4\nInnoDB · utf8mb4" as DB
+}
+
+cloud "Proveedor de pagos\n(PSP)" as PSP
+
+Browser -down-> Net : **HTTPS** (TLS 1.3)\nHTTP/1.1 · HTML, CSS\nCookie JSESSIONID (HttpOnly, Secure)\nToken CSRF por formulario
+
+Net -down-> App : **TCP/443 → 8080**\nterminación TLS en el proxy
+
+App -right-> Sec
+App -right-> View
+App -down-> JPA
+
+JPA -down-> DB : **Protocolo MySQL X/Classic**\nTCP/3306 · driver JDBC\nConnector/J · pool de 10 conexiones
+
+App -right-> PSP : **HTTPS** (TLS 1.3)\nREST/JSON · POST /autorizaciones\nCabecera Idempotency-Key\ntimeout 10 s · reintento controlado
+
+note bottom of Net
+  <b>Capas del modelo TCP/IP</b>
+  Aplicación : HTTP/1.1 sobre TLS 1.3
+  Transporte : TCP (443 público, 8080 y 3306 internos)
+  Internet   : IPv4/IPv6
+  Enlace     : Ethernet / red bridge de Docker
+end note
+
+note bottom of DB
+  El puerto 3306 no se publica a Internet:
+  sólo es alcanzable desde la red interna
+  del compose. En local se expone en 3307
+  únicamente para inspección con un cliente
+  SQL durante la demostración.
+end note
+
+@enduml

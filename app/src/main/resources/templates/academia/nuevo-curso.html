@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Nuevo curso', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <nav class="migas"><a th:href="@{/academia/cursos}">Mis cursos</a> › Nuevo curso</nav>
+
+    <section class="tarjeta angosta">
+        <h1>Crear curso</h1>
+        <p class="nota">CU-11 · El curso se guarda en borrador; aparece en el catálogo cuando lo publicás.</p>
+
+        <form th:action="@{/academia/cursos}" th:object="${form}" method="post">
+            <div class="alerta mal" th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></div>
+
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" th:field="*{titulo}" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('titulo')}" th:errors="*{titulo}"></span>
+
+            <label for="categoriaId">Categoría</label>
+            <select id="categoriaId" th:field="*{categoriaId}" required>
+                <option value="">Elegí una categoría</option>
+                <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}">Categoría</option>
+            </select>
+            <span class="error-campo" th:if="${#fields.hasErrors('categoriaId')}" th:errors="*{categoriaId}"></span>
+
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" th:field="*{descripcion}" rows="3" required></textarea>
+            <span class="error-campo" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></span>
+
+            <label for="precio">Precio (ARS)</label>
+            <input type="number" id="precio" th:field="*{precio}" min="0" step="0.01" required>
+            <span class="error-campo" th:if="${#fields.hasErrors('precio')}" th:errors="*{precio}"></span>
+            <small class="nota">Con precio 0 el curso es gratuito y la inscripción no pasa por el pago.</small>
+
+            <h2 class="subtitulo-form">Plan de estudio</h2>
+
+            <label for="tituloModulo">Primer módulo</label>
+            <input type="text" id="tituloModulo" th:field="*{tituloModulo}" placeholder="Módulo 1">
+
+            <label for="lecciones">Lecciones</label>
+            <textarea id="lecciones" th:field="*{lecciones}" rows="5"
+                      placeholder="Una lección por línea"></textarea>
+            <small class="nota">Un curso sin lecciones se guarda, pero no se puede publicar.</small>
+
+            <button type="submit" class="boton">Guardar en borrador</button>
+        </form>
+    </section>
+
+</div>
+</body>
+</html>

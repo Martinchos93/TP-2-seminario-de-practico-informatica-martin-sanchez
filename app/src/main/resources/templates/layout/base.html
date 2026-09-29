@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es"
+      th:fragment="pagina(titulo, contenido)"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Tribu · ' + ${titulo}">Tribu</title>
+    <link rel="stylesheet" th:href="@{/css/tribu.css}">
+</head>
+<body>
+
+<header class="barra">
+    <a class="marca" th:href="@{/catalogo}">Tri<span>bu</span></a>
+
+    <nav>
+        <a th:href="@{/catalogo}">Catálogo</a>
+
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/usuarios}">Usuarios</a>
+        <a sec:authorize="hasRole('ACADEMIA')" th:href="@{/academia/cursos}">Mis cursos</a>
+        <a sec:authorize="hasRole('ALUMNO')" th:href="@{/alumno/mis-cursos}">Mis cursos</a>
+    </nav>
+
+    <div class="sesion">
+        <span sec:authorize="isAuthenticated()" class="usuario"
+              sec:authentication="principal.nombreCompleto">Usuario</span>
+
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="en-linea">
+            <button type="submit" class="boton-link">Salir</button>
+        </form>
+
+        <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Ingresar</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/registro}" class="boton chico">Crear cuenta</a>
+    </div>
+</header>
+
+<main>
+    <div class="alerta ok" th:if="${mensaje}" th:text="${mensaje}"></div>
+    <div class="alerta mal" th:if="${error}" th:text="${error}"></div>
+
+    <th:block th:replace="${contenido}"></th:block>
+</main>
+
+<footer>
+    Tribu — prototipo académico · Universidad Siglo 21 · Seminario de Práctica Informática
+</footer>
+
+</body>
+</html>

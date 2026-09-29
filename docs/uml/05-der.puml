@@ -1,0 +1,178 @@
+@startuml 05-der
+' =====================================================================
+'  Tribu - Diagrama entidad-relacion (modelo fisico MySQL 8.4)
+'  Entregable: "Diagrama entidad-relacion de la base de datos"
+'
+'  Nota tecnica: cada atributo se marca con {field}. Sin esa marca
+'  PlantUML interpreta como metodo toda linea que contenga parentesis
+'  -VARCHAR(150), DECIMAL(10,2), BIT(1)- y las oculta del diagrama.
+' =====================================================================
+title Tribu — Diagrama entidad-relación
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam ArrowColor #16222e
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #00857A
+  HeaderBackgroundColor #E4F3F1
+  FontColor #16222e
+  FontSize 12
+}
+hide circle
+
+entity "rol" as rol {
+  {field} <b>PK</b>  id : INT
+  --
+  {field} nombre : VARCHAR(30)  [UQ]
+  {field} descripcion : VARCHAR(120)
+}
+
+entity "usuario" as usuario {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} email : VARCHAR(150)  [UQ]
+  {field} password_hash : VARCHAR(100)
+  {field} nombre : VARCHAR(80)
+  {field} apellido : VARCHAR(80)
+  {field} documento : VARCHAR(20)
+  {field} telefono : VARCHAR(30)
+  {field} activo : BIT(1)
+  {field} fecha_alta : DATETIME
+}
+
+entity "usuario_rol" as usuario_rol {
+  {field} <b>PK,FK</b>  usuario_id : BIGINT
+  {field} <b>PK,FK</b>  rol_id : INT
+}
+
+entity "academia" as academia {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} <b>FK</b>  usuario_id : BIGINT  [UQ]
+  {field} razon_social : VARCHAR(150)
+  {field} cuit : VARCHAR(13)  [UQ]
+  {field} descripcion : VARCHAR(500)
+  {field} activa : BIT(1)
+  {field} fecha_alta : DATETIME
+}
+
+entity "categoria" as categoria {
+  {field} <b>PK</b>  id : INT
+  --
+  {field} nombre : VARCHAR(60)  [UQ]
+}
+
+entity "curso" as curso {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} <b>FK</b>  academia_id : BIGINT
+  {field} <b>FK</b>  categoria_id : INT
+  {field} titulo : VARCHAR(150)
+  {field} descripcion : TEXT
+  {field} precio : DECIMAL(10,2)
+  {field} moneda : VARCHAR(3)
+  {field} estado : VARCHAR(20)
+  {field} fecha_creacion : DATETIME
+  {field} fecha_publicacion : DATETIME
+}
+
+entity "modulo" as modulo {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} <b>FK</b>  curso_id : BIGINT
+  {field} titulo : VARCHAR(150)
+  {field} orden : INT
+  --
+  {field} UQ (curso_id, orden)
+}
+
+entity "leccion" as leccion {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} <b>FK</b>  modulo_id : BIGINT
+  {field} titulo : VARCHAR(150)
+  {field} orden : INT
+  {field} tipo_contenido : VARCHAR(10)
+  {field} url_contenido : VARCHAR(500)
+  {field} contenido : TEXT
+  {field} duracion_min : INT
+  --
+  {field} UQ (modulo_id, orden)
+}
+
+entity "inscripcion" as inscripcion {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} <b>FK</b>  alumno_id : BIGINT
+  {field} <b>FK</b>  curso_id : BIGINT
+  {field} estado : VARCHAR(20)
+  {field} fecha_alta : DATETIME
+  {field} fecha_fin : DATETIME
+  --
+  {field} UQ (alumno_id, curso_id)
+}
+
+entity "pago" as pago {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} <b>FK</b>  inscripcion_id : BIGINT
+  {field} monto : DECIMAL(10,2)
+  {field} moneda : VARCHAR(3)
+  {field} medio_pago : VARCHAR(20)
+  {field} estado : VARCHAR(10)
+  {field} clave_idempotencia : VARCHAR(64)  [UQ]
+  {field} referencia_externa : VARCHAR(64)
+  {field} detalle_rechazo : VARCHAR(200)
+  {field} fecha_solicitud : DATETIME
+  {field} fecha_confirmacion : DATETIME
+}
+
+entity "progreso_leccion" as progreso_leccion {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} <b>FK</b>  inscripcion_id : BIGINT
+  {field} <b>FK</b>  leccion_id : BIGINT
+  {field} fecha_completada : DATETIME
+  --
+  {field} UQ (inscripcion_id, leccion_id)
+}
+
+entity "certificado" as certificado {
+  {field} <b>PK</b>  id : BIGINT
+  --
+  {field} <b>FK</b>  inscripcion_id : BIGINT  [UQ]
+  {field} codigo : VARCHAR(40)  [UQ]
+  {field} fecha_emision : DATETIME
+}
+
+' --- Cardinalidades ---
+usuario     ||--o{ usuario_rol
+rol         ||--o{ usuario_rol
+usuario     ||--|| academia
+academia    ||--o{ curso
+categoria   ||--o{ curso
+curso       ||--o{ modulo
+modulo      ||--o{ leccion
+usuario     ||--o{ inscripcion
+curso       ||--o{ inscripcion
+inscripcion ||--o{ pago
+inscripcion ||--o{ progreso_leccion
+leccion     ||--o{ progreso_leccion
+inscripcion ||--o| certificado
+
+note as N1
+  <b>Normalización</b>
+  El esquema está en 3FN: no hay grupos repetitivos
+  (1FN), todo atributo no clave depende de la clave
+  completa (2FN) y no hay dependencias transitivas (3FN).
+
+  La relación N:M usuario–rol se resuelve con la tabla
+  intermedia usuario_rol.
+
+  <b>Leyenda</b>
+  PK clave primaria · FK clave foránea · [UQ] único
+end note
+
+@enduml

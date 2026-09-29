@@ -1,0 +1,30 @@
+@startuml 02b-analisis-crear-curso
+' =====================================================================
+'  Tribu - Clases de analisis de CU-11 Crear curso
+'  PUD, disciplina de Analisis: clases de interfaz, control y entidad
+' =====================================================================
+title Clases de análisis — CU-11 Crear curso
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontSize 13
+left to right direction
+
+actor Academia
+boundary "PantallaNuevoCurso" as I
+control "GestorCursos" as C
+entity "Academia" as E1
+entity "Curso" as E2
+entity "Categoria" as E3
+entity "Modulo" as E4
+entity "Leccion" as E5
+
+Academia -- I
+I -- C
+C -- E1
+C -- E2
+C -- E3
+E2 -- E4
+E4 -- E5
+
+@enduml

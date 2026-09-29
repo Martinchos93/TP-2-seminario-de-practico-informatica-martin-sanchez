@@ -1,0 +1,30 @@
+@startuml 02c-analisis-pagar-curso
+' =====================================================================
+'  Tribu - Clases de analisis de CU-05 Pagar el curso
+'  PUD, disciplina de Analisis: clases de interfaz, control y entidad
+' =====================================================================
+title Clases de análisis — CU-05 Pagar el curso
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontSize 13
+left to right direction
+
+actor Alumno
+actor "Pasarela de pagos" as PSP
+boundary "PantallaPago" as I
+boundary "InterfazPasarela" as IP
+control "GestorPagos" as C
+entity "Inscripcion" as E1
+entity "Pago" as E2
+entity "Curso" as E3
+
+Alumno -- I
+I -- C
+C -- IP
+IP -- PSP
+C -- E1
+C -- E2
+E1 -- E3
+
+@enduml

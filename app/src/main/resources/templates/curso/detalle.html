@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: pagina(${curso.titulo}, ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <nav class="migas"><a th:href="@{/catalogo}">Catálogo</a> › <span th:text="${curso.titulo}"></span></nav>
+
+    <section class="tarjeta">
+        <span class="etiqueta" th:text="${curso.categoria.nombre}">Categoría</span>
+        <h1 th:text="${curso.titulo}">Título</h1>
+        <p class="dictado-por">Dictado por <strong th:text="${curso.academia.razonSocial}"></strong></p>
+        <p th:text="${curso.descripcion}">Descripción</p>
+
+        <div class="pie-tarjeta">
+            <span class="precio grande"
+                  th:text="${curso.esGratuito()} ? 'Gratuito'
+                           : ${curso.moneda} + ' ' + ${#numbers.formatDecimal(curso.precio, 1, 'POINT', 2, 'COMMA')}">
+            </span>
+
+            <form sec:authorize="hasRole('ALUMNO')"
+                  th:action="@{/alumno/inscribir/{id}(id=${curso.id})}" method="post">
+                <button type="submit" class="boton">Inscribirme</button>
+            </form>
+
+            <a sec:authorize="!isAuthenticated()" class="boton" th:href="@{/login}">
+                Ingresá para inscribirte
+            </a>
+        </div>
+    </section>
+
+    <h2>Plan de estudio</h2>
+    <p class="nota" th:if="${#lists.isEmpty(curso.modulos)}">Este curso todavía no tiene contenido cargado.</p>
+
+    <ol class="plan">
+        <li th:each="modulo : ${curso.modulos}">
+            <h3 th:text="${modulo.titulo}">Módulo</h3>
+            <ul>
+                <li th:each="leccion : ${modulo.lecciones}">
+                    <span th:text="${leccion.titulo}">Lección</span>
+                    <small class="nota"
+                           th:text="'· ' + ${leccion.tipoContenido} + ' · ' + ${leccion.duracionMin} + ' min'"></small>
+                </li>
+            </ul>
+        </li>
+    </ol>
+
+</div>
+</body>
+</html>

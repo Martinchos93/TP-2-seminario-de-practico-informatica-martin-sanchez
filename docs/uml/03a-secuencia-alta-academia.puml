@@ -1,0 +1,84 @@
+@startuml 03a-secuencia-alta-academia
+' =====================================================================
+'  Tribu - Diagrama de secuencia CU-10 Dar de alta una academia
+'  (PUD, disciplina de Diseno)
+' =====================================================================
+title Tribu — CU-10 Dar de alta una academia
+
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #16222e
+  LifeLineBorderColor #5B6B7A
+  ParticipantBorderColor #00857A
+  ParticipantBackgroundColor #E4F3F1
+  ParticipantFontColor #16222e
+  ActorBorderColor #00857A
+}
+
+actor Administrador as Admin
+participant "AdminController" as C <<web>>
+participant "AcademiaService" as S <<servicio>>
+participant "Cuit" as V <<utilidad>>
+participant "AcademiaRepository" as RA <<repositorio>>
+participant "UsuarioRepository" as RU <<repositorio>>
+participant "RolRepository" as RR <<repositorio>>
+
+Admin -> C : GET /admin/academias/nueva
+activate C
+C --> Admin : formulario de alta
+deactivate C
+
+Admin -> C : POST /admin/academias\n(razonSocial, cuit, descripcion,\nnombre, apellido, email, password, _csrf)
+activate C
+
+C -> C : validar campos\n(@NotBlank, @Email, @Pattern CUIT)
+alt faltan datos o el formato es inválido (3a)
+    C --> Admin : formulario con el error en cada campo
+else datos completos
+    C -> S : darDeAlta(razonSocial, cuit, descripcion,\nemail, password, nombre, apellido)
+    activate S
+
+    S -> V : esValida(cuit)
+    V --> S : boolean
+
+    alt dígito verificador incorrecto (4a)
+        S --> C : ReglaNegocioException
+    else CUIT válida
+        S -> RA : existsByCuit(cuit)
+        RA --> S : boolean
+        S -> RU : existsByEmail(email)
+        RU --> S : boolean
+
+        alt CUIT ya registrada (5a) o email ya registrado (5b)
+            S --> C : ReglaNegocioException
+        else caso normal
+            create participant "titular : Usuario" as U <<entidad>>
+            S -> U : new Usuario(email, passwordEncoder.encode(password),\nnombre, apellido)
+            S -> RR : findByNombre("ACADEMIA")
+            RR --> S : Rol
+            S -> U : agregarRol(rol)
+            S -> RU : save(titular)
+
+            create participant "academia : Academia" as A <<entidad>>
+            S -> A : new Academia(titular, razonSocial,\ncuit, descripcion)
+            S -> RA : save(academia)
+            note over S, RR
+              Los dos save van en el mismo @Transactional:
+              no puede quedar una cuenta ACADEMIA sin academia.
+            end note
+            S --> C : Academia
+        end
+    end
+    deactivate S
+
+    alt alta rechazada
+        C --> Admin : formulario con el motivo del rechazo
+    else alta confirmada
+        C --> Admin : redirect /admin/usuarios\n+ mensaje de confirmación
+    end
+end
+deactivate C
+
+@enduml

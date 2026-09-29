@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: tribu
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://mysql:3306/tribu?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Argentina/Cordoba&characterEncoding=UTF-8}
+    username: ${DB_USER:tribu}
+    password: ${DB_PASSWORD:tribu}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 10000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+  error:
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    ar.edu.siglo21.tribu: INFO
+    org.hibernate.SQL: INFO

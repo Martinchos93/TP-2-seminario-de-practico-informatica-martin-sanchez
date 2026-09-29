@@ -1,0 +1,48 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: tribu-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-tribu}
+      MYSQL_USER: ${MYSQL_USER:-tribu}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-tribu}
+    ports:
+      - "3307:3306"
+    volumes:
+      - datos-mysql:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  app:
+    build:
+      context: ./app
+    container_name: tribu-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-tribu}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Argentina/Cordoba&characterEncoding=UTF-8
+      DB_USER: ${MYSQL_USER:-tribu}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-tribu}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+
+volumes:
+  datos-mysql:

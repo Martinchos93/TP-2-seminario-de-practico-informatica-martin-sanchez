@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: pagina('Inscriptos', ~{:: #contenido})}">
+<body>
+<div id="contenido">
+
+    <nav class="migas"><a th:href="@{/academia/cursos}">Mis cursos</a> › <span th:text="${curso.titulo}"></span></nav>
+
+    <h1>Inscriptos</h1>
+    <p class="nota" th:text="${curso.titulo}">Curso</p>
+
+    <table class="tabla">
+        <thead>
+        <tr>
+            <th>Alumno</th>
+            <th>Email</th>
+            <th>Fecha de inscripción</th>
+            <th>Estado</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="i : ${inscripciones}">
+            <td th:text="${i.alumno.nombreCompleto}">Alumno</td>
+            <td th:text="${i.alumno.email}">email</td>
+            <td th:text="${#temporals.format(i.fechaAlta, 'dd/MM/yyyy HH:mm')}">fecha</td>
+            <td><span class="etiqueta" th:text="${i.estado}">ESTADO</span></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(inscripciones)}">
+            <td colspan="4" class="nota">Este curso todavía no tiene inscriptos.</td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+</body>
+</html>

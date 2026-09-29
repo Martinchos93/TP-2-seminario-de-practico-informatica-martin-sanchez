@@ -1,0 +1,48 @@
+@startuml 01a-cu10-alta-academia
+' =====================================================================
+'  Tribu - CU-10 Dar de alta una academia
+'  Diagrama de casos de uso individual (PUD, disciplina de Requisitos)
+' =====================================================================
+title Tribu — CU-10 Dar de alta una academia
+
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam ArrowColor #16222e
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #E4F3F1
+  BorderColor #00857A
+  FontColor #16222e
+}
+skinparam package {
+  BackgroundColor #FAFBFC
+  BorderColor #DDE4EA
+}
+left to right direction
+
+actor "Administrador" as Admin
+actor "Academia\n(titular)" as Titular
+
+rectangle "Plataforma Tribu" {
+  usecase "CU-10\nDar de alta una academia\n--\npuntos de extensión:\nCUIT inválida o duplicada\nemail ya registrado" as CU10
+  usecase "Autenticarse" as Auth
+  usecase "Validar CUIT\n(dígito verificador)" as ValCuit
+  usecase "Crear cuenta del titular\ncon rol ACADEMIA" as Cuenta
+  usecase "Informar rechazo\ndel alta" as Rechazo
+}
+
+Admin --> CU10
+CU10 ..> Auth : <<include>>
+CU10 ..> ValCuit : <<include>>
+CU10 ..> Cuenta : <<include>>
+Rechazo ..> CU10 : <<extend>>\n[CUIT inválida o duplicada,\nemail ya registrado]
+Cuenta ..> Titular : habilita el acceso
+
+note right of CU10
+  Postcondición: la academia queda activa y su
+  titular puede iniciar sesión. Academia y cuenta
+  se crean en una sola transacción.
+end note
+
+@enduml

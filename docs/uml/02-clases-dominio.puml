@@ -1,0 +1,68 @@
+@startuml 02-clases-dominio
+' =====================================================================
+'  Tribu - Modelo de clases del dominio (PUD, disciplina de Analisis)
+'  Modelo conceptual: sólo las clases y atributos que usa el MVP.
+' =====================================================================
+title Modelo de clases del dominio
+
+skinparam monochrome true
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam defaultFontSize 13
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+}
+hide circle
+hide empty members
+hide methods
+
+class Usuario {
+  email
+  nombre
+  apellido
+}
+
+class Rol {
+  nombre
+}
+
+class Academia {
+  razonSocial
+  cuit
+}
+
+class Curso {
+  titulo
+  precio
+  estado
+}
+
+class Modulo {
+  titulo
+}
+
+class Leccion {
+  titulo
+}
+
+class Inscripcion {
+  estado
+}
+
+class Pago {
+  monto
+  estado
+}
+
+Usuario "*" -- "1..*" Rol
+Academia "1" -- "1" Usuario : titular
+Academia "1" -- "*" Curso : publica
+Curso "1" *-- "*" Modulo
+Modulo "1" *-- "*" Leccion
+
+Usuario "1" -- "*" Inscripcion : alumno
+Curso "1" -- "*" Inscripcion
+Inscripcion "1" -- "*" Pago
+
+@enduml

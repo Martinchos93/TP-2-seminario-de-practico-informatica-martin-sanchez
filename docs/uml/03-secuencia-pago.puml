@@ -1,0 +1,108 @@
+@startuml 03-secuencia-pago
+' =====================================================================
+'  Tribu - Diagrama de secuencia CU-05 "Pagar el curso"
+'  (PUD, disciplina de Diseno)
+' =====================================================================
+title Tribu — CU-05 Pagar el curso
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #16222e
+  LifeLineBorderColor #5B6B7A
+  ParticipantBorderColor #00857A
+  ParticipantBackgroundColor #E4F3F1
+  ParticipantFontColor #16222e
+  ActorBorderColor #00857A
+}
+
+actor Alumno
+participant "AlumnoController" as C <<web>>
+participant "InscripcionService" as S <<servicio>>
+participant "InscripcionRepository" as RI <<repositorio>>
+participant "PagoRepository" as RP <<repositorio>>
+participant "PasarelaPago" as P <<adaptador>>
+
+Alumno -> C : POST /alumno/pago/{id}\n(medioPago, numeroTarjeta, _csrf)
+activate C
+
+C -> S : porId(inscripcionId)
+activate S
+S -> RI : findById(inscripcionId)
+RI --> S : Inscripcion
+S --> C : Inscripcion
+deactivate S
+
+C -> C : verificar que la inscripción\npertenece al alumno autenticado
+note right of C
+  Sin este control, cambiar el id en
+  la URL permitiría operar sobre la
+  inscripción de otra persona (flujo 1a).
+end note
+
+C -> S : pagar(inscripcionId, medioPago, numeroTarjeta)
+activate S
+
+S -> RI : findById(inscripcionId)
+RI --> S : Inscripcion
+
+alt inscripcion.getEstado() != PENDIENTE_PAGO
+    S --> C : ReglaNegocioException
+else
+    S -> RP : existsByInscripcionIdAndEstado(inscripcionId, APROBADO)
+    RP --> S : boolean
+    alt ya existe un pago APROBADO (4a)
+        S --> C : ReglaNegocioException
+    else caso normal
+        S -> S : claveIdempotencia = UUID.randomUUID()
+        create participant "pago : Pago" as PG <<entidad>>
+        S -> PG : new Pago(inscripcion, precio,\nmedioPago, claveIdempotencia)
+
+        S -> P : autorizar(clave, monto, moneda, numeroTarjeta)
+        activate P
+        note right of P
+          HTTPS/TLS 1.3 · POST JSON
+          Cabecera Idempotency-Key.
+          El número de tarjeta no se
+          persiste ni se escribe en el log.
+        end note
+        P --> S : RespuestaAutorizacion
+        deactivate P
+
+        alt respuesta.aprobado()
+            S -> PG : aprobar(referenciaExterna)
+            S -> RI : inscripcion.activar()\nsave(inscripcion)
+            S -> RP : save(pago)
+            note over S, RP
+              Todo ocurre dentro del mismo
+              @Transactional: o se confirman
+              juntas o no se confirma ninguna.
+            end note
+            S --> C : Pago APROBADO
+        else rechazado (6a)
+            S -> PG : rechazar(referencia, motivo)
+            S -> RP : save(pago)
+            note right of S
+              El intento fallido se conserva:
+              la inscripción sigue PENDIENTE_PAGO
+              y el alumno ve el motivo.
+            end note
+            S --> C : Pago RECHAZADO
+        end
+    end
+end
+deactivate S
+
+alt pago aprobado
+    C --> Alumno : redirect /alumno/cursar/{cursoId}
+else pago rechazado
+    C --> Alumno : redirect /alumno/pago/{id}\n+ motivo del rechazo
+end
+note over Alumno, C
+  Una ReglaNegocioException la atrapa
+  ManejadorDeErrores y muestra la
+  pantalla de error con el mensaje.
+end note
+deactivate C
+
+@enduml

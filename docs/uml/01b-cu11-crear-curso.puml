@@ -1,0 +1,46 @@
+@startuml 01b-cu11-crear-curso
+' =====================================================================
+'  Tribu - CU-11 Crear curso
+'  Diagrama de casos de uso individual (PUD, disciplina de Requisitos)
+' =====================================================================
+title Tribu — CU-11 Crear curso
+
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam ArrowColor #16222e
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #E4F3F1
+  BorderColor #00857A
+  FontColor #16222e
+}
+skinparam package {
+  BackgroundColor #FAFBFC
+  BorderColor #DDE4EA
+}
+left to right direction
+
+actor "Academia" as Academia
+
+rectangle "Plataforma Tribu" {
+  usecase "CU-11\nCrear curso\n--\npuntos de extensión:\ntítulo repetido\nacademia inactiva" as CU11
+  usecase "Autenticarse" as Auth
+  usecase "Cargar plan de estudio\n(módulo y lecciones)" as Plan
+  usecase "Informar rechazo\nde la creación" as Rechazo
+  usecase "CU-03\nPublicar curso" as CU03
+}
+
+Academia --> CU11
+Academia --> CU03
+CU11 ..> Auth : <<include>>
+CU11 ..> Plan : <<include>>
+Rechazo ..> CU11 : <<extend>>\n[título repetido o\nacademia inactiva]
+
+note right of CU11
+  Postcondición: el curso queda en BORRADOR y no
+  aparece en el catálogo. Sólo puede publicarse
+  (CU-03) si tiene al menos una lección.
+end note
+
+@enduml

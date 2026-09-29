@@ -1,0 +1,49 @@
+@startuml 01c-cu05-pagar-curso
+' =====================================================================
+'  Tribu - CU-05 Pagar el curso
+'  Diagrama de casos de uso individual (PUD, disciplina de Requisitos)
+' =====================================================================
+title Tribu — CU-05 Pagar el curso
+
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam ArrowColor #16222e
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #E4F3F1
+  BorderColor #00857A
+  FontColor #16222e
+}
+skinparam package {
+  BackgroundColor #FAFBFC
+  BorderColor #DDE4EA
+}
+left to right direction
+
+actor "Alumno" as Alumno
+actor "Pasarela de pagos" as PSP <<sistema externo>>
+
+rectangle "Plataforma Tribu" {
+  usecase "CU-04\nInscribirse a un curso" as CU04
+  usecase "CU-05\nPagar el curso\n--\npuntos de extensión:\npago rechazado\npago ya aprobado" as CU05
+  usecase "Autenticarse" as Auth
+  usecase "Autorizar cobro" as Autorizar
+  usecase "Informar rechazo\ndel pago" as Rechazo
+}
+
+Alumno --> CU04
+Alumno --> CU05
+CU05 ..> CU04 : <<extend>>\n[curso arancelado]
+CU05 ..> Auth : <<include>>
+CU05 ..> Autorizar : <<include>>
+Autorizar --> PSP
+Rechazo ..> CU05 : <<extend>>\n[pasarela rechaza]
+
+note right of CU05
+  Postcondición: pago APROBADO e inscripción ACTIVA,
+  confirmados en una única transacción. La clave de
+  idempotencia impide el doble cobro.
+end note
+
+@enduml
